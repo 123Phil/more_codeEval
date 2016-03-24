@@ -1,0 +1,37 @@
+"""
+Author: Phillip Stewart
+Date: 20 March 2016
+CodeEval Challenge: 178 - Matrix Rotation
+"""
+
+import sys
+from math import sqrt
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			letters = line.strip().split()
+			N = int(sqrt(len(letters)))
+			matrix = []
+			row = []
+			for i, l in enumerate(letters):
+				row.append(l)
+				if i % N == N-1:
+					matrix.append(row)
+					row = []
+			m2 = []
+			for i in xrange(N):
+				for j in xrange(N):
+					m2.append(matrix[N-j-1][i])
+			print ' '.join(m2)
+
+
+
+if __name__ == "__main__":
+	main(sys.argv)

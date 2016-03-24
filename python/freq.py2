@@ -1,0 +1,94 @@
+"""
+Author: Phillip Stewart
+Date: 18 March 2016
+CodeEval Challenge: Sample Frequency!
+	This is a 'Hard' challenge...
+	but not to fear, I have some experience with musical note recognition!
+
+NO NUMPY!?!?!? agh, codeeval is retarded
+"""
+
+import sys
+
+
+def mean(v):
+	return sum(v)/float(len(v))
+
+
+def fabs(v):
+	"""replicating numpy.fabs for lists"""
+	v2 = []
+	for i in v:
+		v2.append(float(abs(i)))
+	return v2
+
+
+def normalize(v):
+	"""
+	Ended up using mx+b lines since numpy is not an option...
+	"""
+	# Normalize slope and offset around ~0
+	begin = mean(v[:500])
+	end = mean(v[-500:])
+	b = (begin + end) / 2.0
+	m = (end - begin) / 1500.0
+	for i in xrange(2000):
+		v[i] -= m * i + b
+	begin = mean(v[:200])
+	end = mean(v[-200:])
+	b = (begin + end) / 2.0
+	m = (end - begin) / 1800.0
+	for i in xrange(2000):
+		v[i] -= m * i + b
+	# Normalize amplitude to ~100
+	begin = 50.0 / mean(fabs(v[:200]))
+	end = 50.0 / mean(fabs(v[-200:]))
+	b = (begin + end) / 2.0
+	m = (end - begin) / 1800.0
+	for i in xrange(2000):
+		v[i] *= m * i + b
+	return v
+
+
+def smooth(v):
+	""" Points are averaged with their neighbors,
+	first even points, then odd points.
+	"""
+	for _ in xrange(2):
+		for i in xrange(0, len(v)-2, 2):
+				v[i+1] = (((v[i] + v[i+2]) / 2) + v[i+1]) / 2
+		for i in xrange(1, len(v)-3, 2):
+				v[i+1] = (((v[i] + v[i+2]) / 2) + v[i+1]) / 2
+	return v
+
+
+def get_freq(v):
+	runs = 0
+	prev = v[0] > 0
+	for i in xrange(2000):
+		if prev != (v[i] > 0):
+			prev = not prev
+			runs += 1
+	if runs % 2:
+		runs += 1
+	return 5 * runs
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			vals = [float(x) for x in line.strip().split()]
+			vals = normalize(vals)
+			vals = smooth(vals)
+			freq = get_freq(vals)
+			print freq
+
+
+if __name__ == "__main__":
+	main(sys.argv)

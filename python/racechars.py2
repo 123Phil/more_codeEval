@@ -1,0 +1,162 @@
+"""
+Author: Phillip Stewart
+Date: 18 March 2016
+CodeEval Challenge: 136 - Race Chars
+https://www.codeeval.com/open_challenges/136/
+This one is kind of a mess, I went for the quick and dirty but robust method.
+I could break up main into a lot of smaller functions, but most of them would
+  get called once anyway.. so whatever...
+"""
+
+import sys
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	track = []
+	with open(filename, 'r') as f:
+		for line in f:
+			section = list(line.strip())
+			track.append(section)
+
+	#First pass, add path preference:
+	# Mark valid paths with (cost, track char)
+	bad_path = 1000000
+	for i, section in enumerate(track):
+		if i == 0:
+			for j, lane in enumerate(section):
+				#Mark starting tuples
+				if lane == 'C':
+					section[j] = (0, 'C')
+				elif lane == '_':
+					section[j] = (1, '_')
+		else:
+			for j, lane in enumerate(section):
+				if lane == '#':
+					continue
+				#Checkpoints have no penalty, regular gate has 1
+				penalty = 0
+				if lane == '_':
+					penalty = 1
+				#Check costs of paths above
+				previous = []
+				#above
+				if track[i-1][j] != '#':
+					if track[i-1][j][0] != bad_path:
+						previous.append(track[i-1][j][0])
+				#above-left
+				if j > 0:
+					if track[i-1][j-1] != '#':
+						if track[i-1][j-1][0] != bad_path:
+							previous.append(track[i-1][j-1][0])
+				#above-right
+				if j < len(section)-1:
+					if track[i-1][j+1] != '#':
+						if track[i-1][j+1][0] != bad_path:
+							previous.append(track[i-1][j+1][0])
+				#Mark with tuple
+				if previous:
+					lowest = min(previous)
+					try:
+						section[j] = (penalty+lowest, lane)
+					except:
+						print "Error checking path:"
+						print "Penalty: ", penalty, type(penalty)
+						print "Lowest: ", lowest, type(lowest)
+						return
+				else:
+					section[j] = (bad_path, lane)
+
+
+	#Reverse pass to mark path, untuple:
+	i = len(track)-1
+	previous = None
+	while i >= 0:
+		#Fix each section, marking 'P' on path
+		best = None
+		if previous is None:
+			#End section... select best start
+			for j, lane in enumerate(track[i]):
+				if track[i][j] == '#':
+					continue
+				if best is None:
+					best = j
+				elif track[i][j][0] < track[i][best][0]:
+					best = j
+		else:
+			#Check best path from previous:
+			#below
+			if track[i][previous] != '#':
+				cost = track[i][previous][0]
+				if cost != bad_path:
+					best = previous
+			#below-left
+			if previous > 0:
+				if track[i][previous-1] != '#':
+					cost = track[i][previous-1][0]
+					if cost != bad_path:
+						if best is None:
+							best = previous-1
+						elif cost < track[i][best][0]:#on this line, best == previous
+							best = previous-1
+			#below-right
+			if previous < len(track[i])-1:
+				if track[i][previous+1] != '#':
+					cost = track[i][previous+1][0]
+					if cost != bad_path:
+						if best is None:
+							best = previous+1
+						elif cost < track[i][best][0]:#here, best could be previous or previous-1
+							best = previous+1
+		#Invalid track??
+		if best is None or track[i][best][0] == bad_path:
+			print "No valid solution."
+			return
+		previous = best
+		for j, lane in enumerate(track[i]):
+			if track[i][j] == '#':
+				continue
+			if j == best:
+				track[i][j] = 'P'
+			else:
+				track[i][j] = track[i][j][1]
+		i -= 1
+
+	#Forward pass to mark lane directions:
+	previous = None
+	for i, section in enumerate(track):
+		if previous is None:
+			#First row is straight
+			for j, lane in enumerate(section):
+				if lane == 'P':
+					section[j] = '|'
+					previous = j
+					break
+		else:
+			for j, lane in enumerate(section):
+				if lane == 'P':
+					#Which direction?
+					if j == previous:
+						section[j] = '|'
+					elif j == previous+1:
+						section[j] = '\\'
+					elif j == previous-1:
+						section[j] = '/'
+					else:
+						#Bad track... some error occurred?
+						print "Error on the track!"
+						return
+					previous = j
+					break
+
+	#Print track
+	for section in track:
+		print ''.join(section)
+
+
+if __name__ == "__main__":
+	main(sys.argv)

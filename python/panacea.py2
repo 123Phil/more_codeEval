@@ -1,0 +1,27 @@
+"""
+Author: Phillip Stewart
+Date: 20 March 2016
+CodeEval Challenge: 237 - Panacea
+"""
+
+import sys
+from math import sqrt
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			hexs, binaries = line.strip().split('|')
+			hex_sum = sum([int(x, 16) for x in hexs.strip().split()])
+			bin_sum = sum([int(x, 2) for x in binaries.strip().split()])
+			print bin_sum >= hex_sum
+
+
+
+if __name__ == "__main__":
+	main(sys.argv)

@@ -1,0 +1,26 @@
+"""
+Author: Phillip Stewart
+Date: 18 March 2016
+CodeEval Challenge: 240 - Mersenne Primes
+https://www.codeeval.com/open_challenges/240/
+"""
+
+import sys
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	mersennes = [3,7,31,127,2047]#description is fucking terrible on this one... 2047 is not prime, but can be considered a mersenne #
+	with open(filename, 'r') as f:
+		for line in f:
+			max_num = int(line.strip())
+			lessers = [str(n) for n in mersennes if n < max_num]
+			print ", ".join(lessers)
+
+
+if __name__ == "__main__":
+	main(sys.argv)

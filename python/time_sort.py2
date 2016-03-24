@@ -1,0 +1,40 @@
+"""
+Author: Phillip Stewart
+Date: 18 March 2016
+CodeEval Challenge: 214 - Time Sort
+"""
+
+import sys
+
+
+def seconds(time_str):
+	h, m, s = [int(x) for x in time_str.split(':')]
+	t = h*3600 + m*60 + s
+	return t
+
+
+def time_string(seconds):
+	h = int(seconds / 3600 % 60)
+	m = int(seconds / 60 % 60)
+	s = int(seconds % 60)
+	time_str = "{0:02}:{1:02}:{2:02}".format(h,m,s)
+	return time_str
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			times = line.strip().split()
+			tups = sorted([(seconds(t), t) for t in times], reverse=True)
+			times = [tup[1] for tup in tups]
+			print ' '.join(times)
+
+
+if __name__ == "__main__":
+	main(sys.argv)

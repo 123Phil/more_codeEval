@@ -1,0 +1,41 @@
+"""
+Author: Phillip Stewart
+Date: 18 March 2016
+CodeEval Challenge: Age Distribution
+"""
+
+import sys
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			age = int(line.strip())
+			if age < 0 or age > 100:
+				print "This program is for humans"
+			elif age < 3:
+				print "Still in Mama's arms"
+			elif age < 5:
+				print 'Preschool Maniac'
+			elif age < 12:
+				print 'Elementary school'
+			elif age < 15:
+				print 'Middle school'
+			elif age < 19:
+				print 'High school'
+			elif age < 23:
+				print 'College'
+			elif age < 66:
+				print 'Working for the man'
+			else:
+				print 'The Golden Years'
+			
+
+if __name__ == "__main__":
+	main(sys.argv)

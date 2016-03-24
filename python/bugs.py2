@@ -1,0 +1,37 @@
+"""
+Author: Phillip Stewart
+Date: 20 March 2016
+CodeEval Challenge: 237 - Panacea
+"""
+
+import sys
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			bad, good = [x.strip() for x in line.split('|')]
+			total = 0
+			for i, j in zip(bad, good):
+				if i != j:
+					total += 1
+			if total == 0:
+				print 'Done'
+			elif total < 3:
+				print 'Low'
+			elif total < 5:
+				print 'Medium'
+			elif total < 7:
+				print 'High'
+			else:
+				print 'Critical'
+
+
+if __name__ == "__main__":
+	main(sys.argv)
