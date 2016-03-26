@@ -1,0 +1,60 @@
+"""
+Author: Phillip Stewart
+Date: 25 March 2016
+CodeEval Challenge: 193 - Magic Numbers
+"""
+
+import sys
+
+magics = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 13, 15, 17, 19, 31, 35, 37, 39, 51, 53, 57, 59, 71, 73, 75, 79, 91, 93, 95, 97, 147, 174, 258, 285, 417, 471, 528, 582, 714, 741, 825, 852, 1263, 1267, 1623, 1627, 2316, 2356, 2396, 2631, 2635, 2639, 2671, 2675, 2679, 2716, 2756, 2796, 3126, 3162, 3526, 3562, 3926, 3962, 5263, 5267, 5623, 5627, 6231, 6235, 6239, 6271, 6275, 6279, 6312, 6352, 6392, 6712, 6752, 6792, 7126, 7162, 7526, 7562, 7926, 7962, 9263, 9267, 9623, 9627]
+
+def magic(N):
+	numbers = []
+	for n in xrange(N):
+		digits = [int(d) for d in str(n)]
+		visited = []
+		i = 0
+		if len(set(digits)) < len(digits):
+			continue
+		for _ in xrange(len(digits)):
+			i = (i + digits[i]) % len(digits)
+			if i in visited:
+				break
+			visited.append(i)
+		else:
+			if sorted(visited) == range(len(digits)):
+				numbers.append(n)
+	return numbers
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	# magic_numbers = magic(10001)
+	# print 'magics = [',
+	# for m in magic_numbers:
+	# 	print "{},".format(m),
+	# print ']'
+
+	with open(filename, 'r') as f:
+		for line in f:
+			a, b = [int(x) for x in line.strip().split()]
+			i = 0
+			while i < len(magics) and magics[i] < a:
+				i += 1
+			j = i
+			while j < len(magics) and magics[j] <= b:
+				j += 1
+			m = magics[i:j]
+			if m:
+				print ' '.join(str(n) for n in m)
+			else:
+				print '-1'
+
+
+if __name__ == "__main__":
+	main(sys.argv)

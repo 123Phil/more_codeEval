@@ -1,0 +1,52 @@
+"""
+Author: Phillip Stewart
+Date: 25 March 2016
+CodeEval Challenge: 187 - Consecutive Primes
+	-used the helper functions to generate the cons_primes list.
+"""
+
+import sys
+
+# from itertools import permutations
+
+
+cons_primes = [1,2,2,4,96,1024,2880,81024,770144,6309300]
+
+# def is_prime_lt100(n):
+# 	if n in [2,3,5,7,11,13,17,19,23,29,31,37,41,47,53,59,61,67,71,73,79,83,89,97]:
+# 		return True
+# 	else:
+# 		return False
+
+# def bead_nums(n):
+# 	total = 0
+# 	seen = []
+# 	for p in permutations(range(1,n)):
+# 		if is_prime_lt100(n + p[0]) and is_prime_lt100(n + p[-1]) and all(is_prime_lt100(p[i] + p[(i+1)]) for i in xrange(len(p)-1)):
+# 			total += 1
+# 	return total
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+
+	# for i in xrange(2, 19, 2):
+	# 	print "{}: {}".format(i, bead_nums(i))
+	# print ''
+
+	with open(filename, 'r') as f:
+		for line in f:
+			n = int(line.strip())
+			if n%2 == 1:
+				print '0'
+			else:
+				print cons_primes[n/2 - 1]
+
+
+
+if __name__ == "__main__":
+	main(sys.argv)

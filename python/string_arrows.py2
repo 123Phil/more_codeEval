@@ -1,0 +1,54 @@
+"""
+Author: Phillip Stewart
+Date: 25 March 2016
+CodeEval Challenge: 203 - Strings and Arrows
+	I devised a simple FSM for this,
+	left arrow building is states 1-4, right is 5-8.
+	if we hit 4 or 8 and get the final piece, add an arrow and start another.
+	that is: on transition 4->1 and 8->5, a full arrow was read.
+"""
+
+import sys
+
+
+inputs = {
+	'<': 0,
+	'>': 1,
+	'-': 2
+}
+
+states = [
+	[1,5,0],
+	[1,5,2],
+	[1,5,3],
+	[4,5,0],
+	[1,5,2],
+	[1,6,0],
+	[1,6,7],
+	[1,5,8],
+	[1,5,0],
+]
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			total = 0
+			current = 0
+			new_state = 0
+			for l in line.strip():
+				new_state = states[current][inputs[l]]
+				if (current == 4 and new_state == 1) or (current == 8 and new_state == 5):
+					total += 1
+				current = new_state
+			print total
+
+
+if __name__ == "__main__":
+	main(sys.argv)

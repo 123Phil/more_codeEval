@@ -1,0 +1,35 @@
+"""
+Author: Phillip Stewart
+Date: 20 March 2016
+CodeEval Challenge: 200 - Sort Matrix Columns
+"""
+
+import sys
+
+
+def transpose(matrix):
+	""" assumes matrix is N*N """
+	m2 = [list() for _ in matrix]
+	for row in matrix:
+		for i, elem in enumerate(row):
+			m2[i].append(elem)
+	return m2
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			rows = line.strip().split('|')
+			rows = [[int(x) for x in row.strip().split()] for row in rows]
+			rows = transpose(sorted(transpose(rows)))
+			print ' | '.join([' '.join([str(x) for x in row]) for row in rows])
+
+
+if __name__ == "__main__":
+	main(sys.argv)

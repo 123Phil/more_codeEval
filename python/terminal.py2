@@ -1,0 +1,177 @@
+"""
+Author: Phillip Stewart
+Date: 26 March 2016
+CodeEval Challenge: 108 - Computer Terminal
+"""
+
+import sys
+
+# Control Characters:
+# ^c - clear the entire screen; the cursor row and column do not change
+# ^h - move the cursor to row 0, column 0; the image on the screen is not changed
+# ^b - move the cursor to the beginning of the current line; the cursor row does not change
+# ^d - move the cursor down one row if possible; the cursor column does not change
+# ^u - move the cursor up one row, if possible; the cursor column does not change
+# ^l - move the cursor left one column, if possible; the cursor row does not change
+# ^r - move the cursor right one column, if possible; the cursor row does not change
+# ^e - erase characters to the right of, and including, the cursor column on the cursor's row; the cursor row and column do not change
+# ^i - enter insert mode
+# ^o - enter overwrite mode
+# ^^ - write a circumflex (^) at the current cursor location, exactly as if it was not a special character; this is subject to the actions of the current mode (insert or overwrite)
+# ^DD - move the cursor to the row and column specified; each D represents a decimal digit; the first D represents the new row number, and the second D represents the new column number
+
+insert_mode = False
+position = [0, 0] #row, col
+console = [list('          ') for _ in xrange(10)]
+
+
+def interpret(console_input):
+	"""Read input, call control functions and write normal characters"""
+	end = len(console_input)
+	i = 0
+	while i < end:
+		c = console_input[i]
+		if c == '^':
+			i += 1
+			c = console_input[i]
+			if c == '^':
+				write_char(c)
+			elif c == 'c':
+				clear()
+			elif c == 'h':
+				reset_cursor()
+			elif c == 'b':
+				beginning()
+			elif c == 'd':
+				down()
+			elif c == 'u':
+				up()
+			elif c == 'l':
+				left()
+			elif c == 'r':
+				right()
+			elif c == 'e':
+				erase()
+			elif c == 'i':
+				set_insert()
+			elif c == 'o':
+				set_overwrite()
+			elif c in '1234567890' and console_input[i+1] in '1234567890':
+				row = int(c)
+				i += 1
+				col = int(console_input[i])
+				move(row, col)
+			else:
+				print "Invalid control character"
+				sys.exit(1)
+		elif c == '\n':
+			i += 1
+			continue
+		else:
+			write_char(c)
+		i += 1
+
+def print_console():
+	"""Write the contents of the console out to the screen"""
+	for row in console:
+		print ''.join(row)
+
+def write_char(c):
+	"""
+	Write character to console based on the terminal mode.
+	-In overwrite mode, the received character replaces the character at the cursor's location.
+	-In insert mode, the characters to the right of and including the cursor's location
+		are shifted right one column, and the new character is placed at the cursor's location;
+		the character previously in the rightmost column of the cursor's row is lost.
+	Regardless of the mode, the cursor is moved right one column, if possible.
+	"""
+	global console
+	row = position[0]
+	col = position[1]
+	if insert_mode:
+		console[row] = console[row][:col] + [c] + console[row][col:-1]
+	else:
+		console[row][col] = c
+	right()
+
+def clear():
+	"""clear the entire screen; the cursor row and column do not change"""
+	global console
+	console = [list('          ') for _ in xrange(10)]
+
+def reset_cursor():
+	"""move the cursor to row 0, column 0; the image on the screen is not changed"""
+	global position
+	position = [0, 0]
+
+def move(row, col):
+	"""move the cursor to the row and column specified"""
+	#TODO: check bounds...
+	global position
+	position = [row, col]
+
+def beginning():
+	"""move the cursor to the beginning of the current line; the cursor row does not change"""
+	global position
+	position[1] = 0
+
+def down():
+	"""move the cursor down one row if possible; the cursor column does not change"""
+	global position
+	if position[0] < 9:
+		position[0] += 1
+
+def up():
+	"""move the cursor up one row, if possible; the cursor column does not change"""
+	global position
+	if position[0] > 0:
+		position[0] -= 1
+
+def left():
+	"""move the cursor left one column, if possible; the cursor row does not change"""
+	global position
+	if position[1] > 0:
+		position[1] -= 1
+
+def right():
+	"""move the cursor right one column, if possible; the cursor row does not change"""
+	global position
+	if position[1] < 9:
+		position[1] += 1
+
+def erase():
+	"""
+	erase characters to the right of, and including, the cursor column on the cursor's row;
+	the cursor row and column do not change
+	"""
+	global console
+	for i in xrange(position[1], 10):
+		console[position[0]][i]= ' '
+
+def set_insert():
+	"""enter insert mode"""
+	global insert_mode
+	insert_mode = True
+
+def set_overwrite():
+	"""enter overwrite mode"""
+	global insert_mode
+	insert_mode = False
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	console_input = ''
+	with open(filename, 'r') as f:
+		console_input += f.read()
+	interpret(console_input)
+	print_console()
+
+
+if __name__ == "__main__":
+	main(sys.argv)

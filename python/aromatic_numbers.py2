@@ -1,0 +1,46 @@
+"""
+Author: Phillip Stewart
+Date: 25 March 2016
+CodeEval Challenge: 150 - Aromatic Numbers
+"""
+
+import sys
+
+romans = {
+	'I': 1, 
+	'V': 5,
+	'X': 10,
+	'L': 50,
+	'C': 100,
+	'D': 500,
+	'M': 1000
+}
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			line = list(line.strip())
+			pairs = zip([int(x) for x in line[::2]], [romans[c] for c in line[1::2]])
+			total = 0
+			prev_count = 0
+			prev1 = 10000
+			for pair in pairs:
+				if pair[1] > prev1:
+					total -= prev_count
+				else:
+					total += prev_count
+				prev_count = pair[0] * pair[1]
+				prev1 = pair[1]
+			total += prev_count
+			print total
+
+
+if __name__ == "__main__":
+	main(sys.argv)

@@ -1,0 +1,54 @@
+"""
+Author: Phillip Stewart
+Date: 20 March 2016
+CodeEval Challenge: 121 - Lost in Translation
+"""
+
+import sys
+
+d = {
+	' ': ' ',
+	'a': 'y',
+	'b': 'h',
+	'c': 'e',
+	'd': 's',
+	'e': 'o',
+	'f': 'c',
+	'g': 'v',
+	'h': 'x',
+	'i': 'd',
+	'j': 'u',
+	'k': 'i',
+	'l': 'g',
+	'm': 'l',
+	'n': 'b',
+	'o': 'k',
+	'p': 'r',
+	'q': 'z',
+	'r': 't',
+	's': 'n',
+	't': 'w',
+	'u': 'j',
+	'v': 'p',
+	'w': 'f',
+	'x': 'm',
+	'y': 'a',
+	'z': 'q'
+}
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	code = {}
+	with open(filename, 'r') as f:
+		for line in f:
+			letters = line.strip()
+			print ''.join([d[c] for c in letters])
+
+
+if __name__ == "__main__":
+	main(sys.argv)

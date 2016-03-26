@@ -1,0 +1,32 @@
+"""
+Author: Phillip Stewart
+Date: 25 March 2016
+CodeEval Challenge: 186 - Max Range Sum
+"""
+
+import sys
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			N, D = line.strip().split(';')
+			N = int(N)
+			D = [int(d) for d in D.split()]
+			best = -10000000
+			for i in xrange(len(D) - N + 1):
+				#print D[i:i+N]
+				current = sum(D[i:i+N])
+				if current > best:
+					best = current
+			print max(best, 0)
+
+
+if __name__ == "__main__":
+	main(sys.argv)

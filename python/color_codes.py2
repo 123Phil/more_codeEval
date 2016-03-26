@@ -1,0 +1,115 @@
+"""
+Author: Phillip Stewart
+Date: 20 March 2016
+CodeEval Challenge: 148 - Color Code Converter
+	Algorithms devised from math on:
+	https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
+	uhh, hsv is wrong on wiki??
+	-Yeah the wiki formulas are fucked, importing colorsys!
+	CMYK is a guess from various sources... none definitive
+	hex is easy...
+"""
+
+import sys
+import colorsys
+
+
+def hsl_rgb(h, s, l):
+	s = 0.01 * s
+	l = 0.01 * l
+	h2 = h / 60
+	C = (1 - abs(2 * l - 1)) * s
+	X = C * (1 - abs(h2%2 - 1))
+	r,g,b = 0,0,0
+	if 0 <= h2 < 1:
+		r,g,b = C,X,0
+	elif h2 < 2:
+		r,g,b = X,C,0
+	elif h2 < 3:
+		r,g,b = 0,C,X
+	elif h2 < 4:
+		r,g,b = 0,X,C
+	elif h2 < 5:
+		r,g,b = X,0,C
+	elif h2 < 6:
+		r,g,b = C,0,X
+	else:
+		r,g,b = 0,0,0
+	m = l - C*0.5
+	r,g,b = [int(round((x+m)*255)) for x in [r,g,b]]
+	return r,g,b
+
+
+def hsv_rgb(h, s, v):
+	s = 0.01 * float(s)
+	v = 0.01 * float(v)
+	h2 = h / 60
+	C = v * s
+	X = C * (1 - abs((h2%2) - 1))
+	r,g,b = 0,0,0
+	if 0 <= h2 < 1:
+		r,g,b = C,X,0
+	elif h2 < 2:
+		r,g,b = X,C,0
+	elif h2 < 3:
+		r,g,b = 0,C,X
+	elif h2 < 4:
+		r,g,b = 0,X,C
+	elif h2 < 5:
+		r,g,b = X,0,C
+	elif h2 < 6:
+		r,g,b = C,0,X
+	else:
+		r,g,b = 0,0,0
+	m = v - C
+	r,g,b = [int(round((x+m)*255)) for x in [r,g,b]]
+	return r,g,b
+
+
+def cmyk_rgb(c, m, y, k):
+	r = int(round(255 * (1-c) * (1-k)))
+	g = int(round(255 * (1-m) * (1-k)))
+	b = int(round(255 * (1-y) * (1-k)))
+	return r,g,b
+
+
+def hex_rgb(hex_str):
+	r = int(hex_str[:2], 16)
+	g = int(hex_str[2:4], 16)
+	b = int(hex_str[4:], 16)
+	return r,g,b
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	code = {}
+	with open(filename, 'r') as f:
+		for line in f:
+			line = line.strip()
+			r,g,b = 0,0,0
+			if line.startswith('('):
+				c,m,y,k = [float(x) for x in line[1:-1].split(',')]
+				r,g,b = cmyk_rgb(c,m,y,k)
+			elif line.startswith('HSL'):
+				h,s,l = [int(x) for x in line[4:-1].split(',')]
+				#r,g,b = hsl_rgb(h,s,l)
+				r,g,b = colorsys.hls_to_rgb(h/360.0, l*0.01, s*0.01)
+				r,g,b = [int(round((x)*255)) for x in [r,g,b]]
+			elif line.startswith('HSV'):
+				h,s,v = [int(x) for x in line[4:-1].split(',')]
+				#r,g,b = hsv_rgb(h,s,v)
+				r,g,b = colorsys.hsv_to_rgb(h/360.0, s*0.01, v*0.01)
+				r,g,b = [int(round((x)*255)) for x in [r,g,b]]
+			elif line.startswith('#'):
+				hex_str = line[1:]
+				r,g,b = hex_rgb(hex_str)
+			print "RGB({0},{1},{2})".format(r,g,b)
+
+
+if __name__ == "__main__":
+	main(sys.argv)
