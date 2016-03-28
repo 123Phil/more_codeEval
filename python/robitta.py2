@@ -1,0 +1,64 @@
+"""
+Author: Phillip Stewart
+Date: 26 March 2016
+CodeEval Challenge: 212 - Robo and Robitta
+"""
+
+import sys
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			a,b = line.strip().split('|')
+			num_cols, num_rows = [int(x) for x in a.strip().split('x')]
+			a,b = [int(x) for x in b.strip().split()]
+			col = a-1
+			row = num_rows - b
+			curr_row, curr_col = 0, 0
+			top, left, bottom, right = 0, 0, num_rows-1, num_cols-1
+			total = 1
+			for _ in xrange((num_rows+1) / 2):# bounded alt. to 'while True:'
+				# Go Right
+				if curr_row == row:
+					total += col - curr_col
+					break
+				else:
+					total += right - curr_col
+					curr_col = right
+					top += 1
+				# Go Down
+				if curr_col == col:
+					total += row - curr_row
+					break
+				else:
+					total += bottom - curr_row
+					curr_row = bottom
+					right -= 1
+				# Go Left
+				if curr_row == row:
+					total += curr_col - col
+					break
+				else:
+					total += curr_col - left
+					curr_col = left
+					bottom -= 1
+				# Go Up
+				if curr_col == col:
+					total += curr_row - row
+					break
+				else:
+					total += curr_row - top
+					curr_row = top
+					left += 1
+			print total
+
+			
+if __name__ == "__main__":
+	main(sys.argv)

@@ -1,0 +1,37 @@
+"""
+Author: Phillip Stewart
+Date: 26 March 2016
+CodeEval Challenge: 218 - Builder's Team
+"""
+
+import sys
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			pipes = sorted([sorted([int(x) for x in c.split()]) for c in line.strip().split('|')])
+			#horribly inneficient, but straightforward:
+			total = 0
+			for x in [1,2,3,4,6,7,8,9,11,12,13,14,16,17,18,19]:
+				if all([p in pipes for p in [[x,x+1],[x,x+5],[x+1,x+6],[x+5,x+6]]]):
+					total += 1
+			for x in [1,2,3,6,7,8,11,12,13]:
+				if all([p in pipes for p in [[x,x+1],[x+1,x+2],[x,x+5],[x+2,x+7],[x+5,x+10],[x+7,x+12],[x+10,x+11],[x+11,x+12]]]):
+					total += 1
+			for x in [1,2,6,7]:
+				if all([p in pipes for p in [[x,x+1],[x+1,x+2],[x+2,x+3],[x,x+5],[x+5,x+10],[x+10,x+15],[x+3,x+8],[x+8,x+13],[x+13,x+18],[x+15,x+16],[x+16,x+17],[x+17,x+18]]]):
+					total += 1
+			if all([p in pipes for p in [[1,2],[2,3],[3,4],[4,5],[21,22],[22,23],[23,24],[24,25],[1,6],[6,11],[11,16],[16,21],[5,10],[10,15],[15,20],[20,25]]]):
+				total += 1
+			print total
+
+			
+if __name__ == "__main__":
+	main(sys.argv)

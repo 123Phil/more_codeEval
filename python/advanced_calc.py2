@@ -1,0 +1,390 @@
+"""
+Author: Phillip Stewart
+Date: 27 March 2016
+CodeEval Challenge: 95 - Advanced Calculator
+"""
+
+import sys, math
+from decimal import Decimal, getcontext, ROUND_HALF_UP
+getcontext().rounding = ROUND_HALF_UP
+# Yeah, I had to use decimal ROUND_HALF_UP... annoying
+
+def separate(line):
+	# is_unary tracks whether '-' is a unary or binary operator
+	# is_unary means we are expecting a value
+	# !is_unary means we are expecting a binary operator (or !)
+	parts = []
+	i = 0
+	is_unary = True
+	neg = False
+	while i < len(line):
+		# Using '[' and ']' for open and close pipes.
+		if line[i] == '|':
+			if is_unary:
+				parts.append('[')
+			else:
+				parts.append(']')
+		elif line[i] in '(^*/+':
+			parts.append(line[i])
+			is_unary = True
+		elif line[i] == 'e':
+			parts.append(math.e)
+			is_unary = False
+		elif line[i] == 'e':
+			parts.append(math.e)
+			is_unary = False
+		elif line[i] == 'P':
+			parts.append(math.pi)
+			i += 1
+			is_unary = False
+		elif line[i] == 'm':
+			parts.append('%')
+			i += 2
+			is_unary = True
+		elif line[i] in 'sctl':
+			if line[i] == 's':
+				if line[i+1] == 'q':
+					parts.append('sqrt')
+					i += 3
+				else:
+					parts.append('sin')
+					i += 2
+			elif line[i] == 'c':
+				parts.append('cos')
+				i += 2
+			elif line[i] == 't':
+				parts.append('tan')
+				i += 2
+			elif line[i] == 'l':
+				if line[i+1] == 'g':
+					parts.append('lg')
+					i += 1
+				else:
+					parts.append('ln')
+					i += 1
+		elif line[i] == '!':
+			parts.append('!')
+			is_unary = False
+		elif line[i] == ')':
+			parts.append(')')
+			is_unary = False
+		elif line[i] == '-' and not is_unary:
+			parts.append('-')
+			is_unary = True
+		elif line[i] == '-' and (line[i+1] == '(' or line[i+1] == '-'):
+			if line[i+1] == '-':
+				i += 1
+			else:
+				parts.append('neg')
+				parts.append('(')
+				i += 1
+			is_unary = True
+		else:
+			if line[i] == '-':
+				neg = True
+				i += 1
+			else:
+				neg = False
+			num = 0
+			start = i
+			while i+1 < len(line) and line[i+1] in '1234567890':
+				i += 1
+			if i+1 < len(line) and line[i+1] == '.':
+				i += 1
+				while i+1 < len(line) and line[i+1] in '1234567890':
+					i += 1
+				num = float(line[start:i+1])
+			else:
+				num = int(line[start:i+1])
+			if neg:
+				num *= -1
+			parts.append(num)
+			is_unary = False
+		i += 1
+	return parts
+
+
+def calc(parts):
+	if 'sqrt' in parts:
+		parts = do_sqrt(parts)
+	if 'cos' in parts:
+		parts = do_cos(parts)
+	if 'sin' in parts:
+		parts = do_sin(parts)
+	if 'tan' in parts:
+		parts = do_tan(parts)
+	if 'lg' in parts:
+		parts = do_log10(parts)
+	if 'ln' in parts:
+		parts = do_ln(parts)
+	if '(' in parts:
+		parts = parens(parts)
+	if '[' in parts:
+		parts = do_abs(parts)
+	if '!' in parts:
+		parts = do_factorial(parts)
+	if 'neg' in parts:
+		parts = negate(parts)
+	if '^' in parts:
+		parts = exp(parts)
+	if '%' in parts:
+		parts = do_mod(parts)
+	if '*' in parts or '/' in parts:
+		parts = muldiv(parts)
+	if '+' in parts or '-' in parts:
+		parts = addsub(parts)
+	return parts[0]
+
+
+def do_function(parts, name, func):
+	""" Factored out similar func calls (sqrt,sin,cos,tan...)
+	- name - str identifier of function in parts
+	- func - callable function that takes one value as argument
+	"""
+	start = parts.index(name)
+	i = start + 1
+	nested = 0
+	while i < len(parts):
+		if parts[i] == '(':
+			nested += 1
+		if parts[i] == ')':
+			if nested == 1:
+				parts_before = parts[:start]
+				parts_after = parts[i+1:]
+				new_val = func(calc(parts[start+2:i]))
+				parts =  parts_before + [new_val] + parts_after
+				if name in parts:
+					start = parts.index(name)
+					i = start + 1
+					nested = 0
+					continue
+				else:
+					break
+			else:
+				nested -= 1
+		i += 1
+	#print parts
+	return parts
+
+
+def do_sqrt(parts):
+	name = 'sqrt'
+	func = math.sqrt
+	return do_function(parts, name, func)
+
+def do_cos(parts):
+	name = 'cos'
+	func = math.cos
+	return do_function(parts, name, func)
+
+def do_sin(parts):
+	name = 'sin'
+	func = math.sin
+	return do_function(parts, name, func)
+
+def do_tan(parts):
+	name = 'tan'
+	func = math.tan
+	return do_function(parts, name, func)
+
+def do_log10(parts):
+	name = 'lg'
+	func = math.log10
+	return do_function(parts, name, func)
+
+def do_ln(parts):
+	name = 'ln'
+	func = math.log
+	return do_function(parts, name, func)
+
+
+def do_factorial(parts):
+	i = 0
+	while i < len(parts):
+		if parts[i] == '!':
+			parts = parts[:i-1] + [math.factorial(parts[i-1])] + parts[i+1:]
+			continue
+		i += 1
+	#print parts
+	return parts
+
+
+def parens(parts):
+	i = 0
+	nested = 0
+	start = 0
+	while i < len(parts):
+		if parts[i] == '(':
+			if nested == 0:
+				start = i
+			nested += 1
+		if parts[i] == ')':
+			if nested == 1:
+				parts = parts[:start] + [calc(parts[start+1:i])] + parts[i+1:]
+				if '(' in parts:
+					i = 0
+					nested = 0
+					continue
+				else:
+					break
+			else:
+				nested -= 1
+		i += 1
+	#print parts
+	return parts
+
+
+def do_abs(parts):
+	i = 0
+	nested = 0
+	start = 0
+	while i < len(parts):
+		if parts[i] == '[':
+			if nested == 0:
+				start = i
+			nested += 1
+		if parts[i] == ']':
+			if nested == 1:
+				parts = parts[:start] + [abs(calc(parts[start+1:i]))] + parts[i+1:]
+				if '[' in parts:
+					i = 0
+					nested = 0
+					continue
+				else:
+					break
+			else:
+				nested -= 1
+		i += 1
+	#print parts
+	return parts
+
+
+def negate(parts):
+	i = len(parts) - 1
+	while i >= 0:
+		if parts[i] == 'neg':
+			parts = parts[:i] + [-parts[i+1]] + parts[i+2:]
+			continue
+		i -= 1
+	#print parts
+	return parts
+
+
+def exp(parts):
+	i = 0
+	while i < len(parts):
+		if parts[i] == '^':
+			parts = parts[:i-1] + [pow(parts[i-1], parts[i+1])] + parts[i+2:]
+			continue
+		i += 1
+	#print parts
+	return parts
+
+
+def do_mod(parts):
+	i = 0
+	while i < len(parts):
+		if parts[i] == '%':
+			parts = parts[:i-1] + [int(parts[i-1]) % int(parts[i+1])] + parts[i+2:]
+			continue
+		i += 1
+	#print parts
+	return parts
+
+
+def muldiv(parts):
+	i = 0
+	while i < len(parts):
+		if parts[i] == '*':
+			parts = parts[:i-1] + [parts[i-1] * parts[i+1]] + parts[i+2:]
+			continue
+		elif parts[i] == '/':
+			dividend, divisor = parts[i-1], parts[i+1]
+			quotient = 0
+			if type(divisor) == int and type(dividend) == int and dividend % divisor == 0:
+				quotient = dividend / divisor
+			else:
+				try:
+					quotient = dividend / float(divisor)
+				except OverflowError:
+					quotient = float(Decimal(dividend) / Decimal(divisor))
+			parts = parts[:i-1] + [quotient] + parts[i+2:]
+			continue
+		i += 1
+	#print parts
+	return parts
+
+
+def addsub(parts):
+	i = 0
+	while i < len(parts):
+		if parts[i] == '+':
+			parts = parts[:i-1] + [parts[i-1] + parts[i+1]] + parts[i+2:]
+			continue
+		elif parts[i] == '-':
+			parts = parts[:i-1] + [parts[i-1] - parts[i+1]] + parts[i+2:]
+			continue
+		i += 1
+	#print parts
+	return parts
+
+
+def num_print(num):
+	if type(num) == int:
+		print num
+	else:
+		num = Decimal(num)
+		print "{:.5f}".format(num).rstrip('0').rstrip('.')
+
+# Had to check rounding... python does banker's rounding by default
+# def num_print7(num):
+# 	if type(num) == int:
+# 		print num
+# 	else:
+# 		print "{:.7f}".format(num).rstrip('0').rstrip('.')
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+
+	with open(filename, 'r') as f:
+		for line in f:
+			if line == '\n':
+				continue
+			parts = separate(line.strip().replace(' ', ''))
+			#print parts
+			answer = calc(parts)
+			num_print(answer)
+
+
+			
+if __name__ == "__main__":
+	main(sys.argv)
+
+
+# A quick and dirty eval verifier (doesn't do abs or factorial)
+# and needs 'from __future__ import division' for proper division
+	# l2 = line.strip()
+	# replaces = [
+	# 	('Pi', str(math.pi)),
+	# 	('e', str(math.e)),
+	# 	('sqrt', 'math.sqrt'),
+	# 	('cos', 'math.cos'),
+	# 	('sin', 'math.sin'),
+	# 	('tan', 'math.tan'),
+	# 	('lg', 'math.log10'),
+	# 	('ln', 'math.log'),
+	# 	('mod', '%'),
+	# 	('^', '**')
+	# ]
+	# for word, new_word in replaces:
+	# 	l2 = l2.replace(word, new_word)
+	# ev = 0
+	# try:
+	# 	ev = eval(l2)
+	# except SyntaxError:
+	# 	pass
