@@ -1,0 +1,85 @@
+"""
+Author: Phillip Stewart
+Date: 30 March 2016
+CodeEval Challenge: 77 - Da Vyncy
+"""
+
+import sys
+from itertools import islice
+
+def get_overlap(a, b):
+	""" Determine max overlap of a and b (at ends)
+	Assumptions: len(a) >= len(b), b not in a
+	"""
+	max_overlap = 0
+	a_first = True
+	# Check a-b ends
+	i = a.find(b[0], len(a)-len(b)+1)
+	if i != -1:
+		start = len(a) - i
+		for i in xrange(start, 0, -1):
+			if a.endswith(b[:i]):
+				max_overlap = i
+				break
+	# Check b-a ends
+	start = b.find(a[0])
+	if start != -1:
+		for i in xrange(start, len(b) - max_overlap):
+			if a.startswith(b[i:]):
+				return len(b)-i, False
+	return max_overlap, a_first
+
+
+def decode(parts):
+	while len(parts) > 1:
+		parts.sort(key=len, reverse=True)
+
+		# If any fragment is covered by another, discard it
+		covered = []
+		for i in xrange(len(parts)-1):
+			for j in xrange(i+1, len(parts)):
+				if parts[j] in parts[i]:
+					covered.append(j)
+		for j in sorted(list(set(covered)), reverse=True):
+			del parts[j]
+
+		# Track largest overlap:
+		largest_overlap = 0
+		final_order = True
+		a, b = 0, 1
+		for i in xrange(len(parts)-1):
+			for j in xrange(i+1, len(parts)):
+				overlap, order = get_overlap(parts[i], parts[j])
+				if overlap > largest_overlap:
+					largest_overlap = overlap
+					final_order = order
+					a, b = i, j
+		
+		# Connect a and b
+		if final_order:
+			parts[a] += parts[b][largest_overlap:]
+			del parts[b]
+		else:
+			parts[b] += parts[a][largest_overlap:]
+			del parts[a]
+
+	return parts[0]
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			if line == '\n':
+				continue
+			parts = line.strip().split(';')
+			print decode(parts)
+
+
+if __name__ == "__main__":
+	main(sys.argv)

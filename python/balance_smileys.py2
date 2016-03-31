@@ -1,0 +1,159 @@
+"""
+Author: Phillip Stewart
+Date: 28 March 2016
+CodeEval Challenge: 84 - Balanced Smileys
+"""
+
+import sys
+
+
+def dissect(line):
+	# valid parts: [':(', '(', '(:', '(:)', '):(', ':)', ')', '):']
+	parts = []
+	i = 0
+	while i < len(line):
+		if line[i] == '(':
+			if i+1 < len(line) and line[i+1] == ':':
+				i += 1
+				if i+1 < len(line) and line[i+1] == ')':
+					i += 1
+					parts.append('(:)')
+				else:
+					parts.append('(:')
+			else:
+				parts.append('(')
+		elif line[i] == ')':
+			if i+1 < len(line) and line[i+1] == ':':
+				i += 1
+				if i+1 < len(line) and line[i+1] == '(':
+					i += 1
+					parts.append('):(')
+				else:
+					parts.append('):')
+			else:
+				parts.append(')')
+		elif line[i] == ':':
+			if i+1 < len(line) and line[i+1] == '(':
+				i += 1
+				parts.append(':(')
+			elif i+1 < len(line) and line[i+1] == ')':
+				i += 1
+				parts.append(':)')
+		i += 1
+	return parts
+
+
+def is_plausible(parts):
+	""" Does every ')' have a '(' or ':(' or '(:' before it? """
+	stay_positive = 0
+	for p in parts:
+		if p == ')':
+			stay_positive -= 1
+			if stay_positive < 0:
+				return False
+		elif p in ['(', ':(', '(:', '(:)', '):(']:
+			stay_positive += 1
+	else:
+		return True
+
+
+def all_possibles(parts):
+	var_tups = [(i, p) for i, p in enumerate(parts) if ':' in p]
+	var_locs = [x[0] for x in var_tups]
+	counters = [0] * len(var_tups)
+	new_parts = []
+	max_iters = 1
+	yield_parts = []
+	for p in parts:
+		if p in '()':
+			new_parts.append(p)
+			yield_parts.append(p)
+		elif p in [':(', '(:']:
+			new_parts.append(['', '('])
+			max_iters *= 2
+		elif p in [':)', '):']:
+			new_parts.append(['', ')'])
+			max_iters *= 2
+		elif p == '(:)':
+			new_parts.append(['', '(', ')'])
+			max_iters *= 3
+		elif p == '):(':
+			new_parts.append(['', '(', ')'])
+			max_iters *= 3
+	yield yield_parts
+	for _ in xrange(max_iters-1):
+		#increment counters, break on overcount
+		i = 0
+		while True:
+			counters[i] += 1
+			if counters[i] < len(parts[var_locs[i]]):
+				break
+			else:
+				counters[i] = 0
+				i += 1
+		#make and yield parts
+		yield_parts = []
+		j = 0
+		for i, p in enumerate(new_parts):
+			if i in var_locs:
+				part = p[counters[j]]
+				if part:
+					yield_parts.append(part)
+				j += 1
+			else:
+				yield_parts.append(p)
+		yield yield_parts
+
+
+def is_balanceable(parts):
+	""" Can we possibly balance these parts """
+	for p in all_possibles(parts):
+		#print "GEN:", ' '.join(p)
+		if is_valid(remove_adj(p)):
+			return True
+	else:
+		return False
+
+
+def remove_adj(parts):
+	i = 0
+	while i < len(parts):
+		if parts[i] == '(' and i+1 < len(parts) and parts[i+1] == ')':
+			parts = parts[:i] + parts[i+2:]
+			i = 0
+			continue
+		i += 1
+	return parts
+
+
+def is_valid(parts):
+	return '(' not in parts and ')' not in parts
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+
+	with open(filename, 'r') as f:
+		for line in f:
+			if line == '\n':
+				continue
+			parts = dissect(line.strip())
+			#print ' '.join(parts)
+			parts = remove_adj(parts)
+			#print ' '.join(parts)
+			if not is_plausible(parts):
+				print 'NO'
+				continue
+			if is_balanceable(parts):
+				print 'YES'
+			else:
+				print 'NO'
+
+
+			
+if __name__ == "__main__":
+	main(sys.argv)

@@ -1,0 +1,56 @@
+"""
+Author: Phillip Stewart
+Date: 29 March 2016
+CodeEval Challenge: 36 - Message Decoding
+"""
+
+import sys
+
+
+def next_key(key):
+	key_len = len(key)
+	upper_lim = pow(2, key_len) - 1
+	num = int(key, 2) + 1
+	if num == upper_lim:
+		num = 0
+		key_len += 1
+	return "{{0:0{0}b}}".format(key_len).format(num)
+
+
+def decode(code, binary):
+	code_dict = {}
+	key = '0'
+	for letter in code:
+		code_dict[key] = letter
+		key = next_key(key)
+
+	decoded = []
+	while binary:
+		key_len, binary = int(binary[:3], 2), binary[3:]
+		if key_len == 0:
+			break
+		while True:
+			key, binary = binary[:key_len], binary[key_len:]
+			if '0' not in key:
+				break
+			decoded.append(code_dict[key])
+	return ''.join(decoded)
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			i = min(line.find('0'), line.find('1'))
+			code = line[:i]
+			bins = line[i:-1]
+			print decode(code, bins)
+
+
+if __name__ == "__main__":
+	main(sys.argv)

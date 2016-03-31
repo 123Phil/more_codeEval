@@ -1,0 +1,81 @@
+"""
+Author: Phillip Stewart
+Date: 18 March 2016
+CodeEval Challenge: 118 - Seat Your Team Members
+"""
+
+import sys
+
+
+def can_seat(preferences):
+	""" If preferences is satisfiable, return True 
+	- preferences - list of lists of ints, each list of ints is a person's seating prefs
+	preferences is satisfiable if [1..N] can be constructed by selecting one element
+		from each person's pref-list
+	"""
+	# First check that no two people only want the same seat
+	singles = sorted([p[0] for p in preferences if len(p) == 1])
+	prev = 0
+	for num in singles:
+		if num == prev:
+			return False
+		prev = num
+	if len(singles) == len(preferences):
+		return True
+	# Take singles out of running for other people
+	singles = set(singles)
+	preferences = [p for p in preferences if len(p) != 1]
+	preferences = [sorted([n for n in p if n not in singles]) for p in preferences]
+	
+	max_iters = 1
+	for p in preferences:
+		max_iters *= len(p)
+	i = 0 #num_seats_taken
+	num_seats = len(preferences)
+	seats_taken = [0] * num_seats
+	pref_indexes = [0] * num_seats
+	for _ in xrange(max_iters):
+		# Run through poosibilities, 'pruning' by counting up the indexes (and now Hall's thm)
+		#  if no-can-do, inc indexes up from beginning
+		seat = preferences[i][pref_indexes[i]]
+		#the 'or ...' mess = "not all remaining seats are wanted" (hall's marriage thm)
+		# remaining_prefs = set([x for j in xrange(i, num_seats) for x in preferences[j]])
+		# assigned = set([x for x in seats_taken if x > 0])
+		if seat in seats_taken or (num_seats-i)-1 > len(set([x for j in xrange(i, num_seats) for x in preferences[j]]) - set([x for x in seats_taken if x > 0])):
+			# increase counter on seat prefs,
+			# if out of bounds - rollback & increase...
+			pref_indexes[i] += 1
+			while pref_indexes[i] == len(preferences[i]):
+				pref_indexes[i] = 0
+				seats_taken[i] = 0
+				i -= 1
+				if i < 0:
+					return False
+				pref_indexes[i] += 1
+		else:
+			# Take seat
+			seats_taken[i] = seat
+			i += 1
+			if i == num_seats:
+				return True
+
+
+def main(args):
+	if len(args) != 2:
+		print 'Usage ~$ ' + args[0] + ' <input file>'
+		sys.exit(0)
+	else:
+		filename = args[1]
+	
+	with open(filename, 'r') as f:
+		for line in f:
+			preferences = [p[p.find('[')+1:p.find(']')] for p in line.strip()[line.find(':')+1:].split(':')]
+			preferences = sorted([[int(x) for x in p.split(', ')] for p in preferences], key=len)
+			if can_seat(preferences):
+				print 'Yes'
+			else:
+				print 'No'
+
+
+if __name__ == "__main__":
+	main(sys.argv)

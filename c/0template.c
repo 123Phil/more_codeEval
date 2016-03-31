@@ -1,7 +1,7 @@
 /*
 Author: Phillip Stewart
 Date: 20 March 2016
-CodeEval Challenge: 173 - Without repitition
+CodeEval Challenge:
 */
 
 #include <stdio.h>
@@ -21,10 +21,11 @@ int main(int argc, char* argv[])
 		return 0;
     }
 
-	char buffer[80];
-	while(fgets(buffer, 80, fp)) {
+	char buffer[200];
+	while(fgets(buffer, 200, fp)) {
 
 		//logic
+
 
 	}//end of while(fgets...){}
 	
