@@ -5,8 +5,20 @@ CodeEval Challenge: 77 - Da Vyncy
 """
 
 import sys
-from itertools import islice
 
+class memoized(object):
+	def __init__(self, func):
+		self.func = func
+		self.cache = {}
+	def __call__(self, *args):
+		if args in self.cache:
+			return self.cache[args]
+		else:
+			value = self.func(*args)
+			self.cache[args] = value
+			return value
+
+@memoized
 def get_overlap(a, b):
 	""" Determine max overlap of a and b (at ends)
 	Assumptions: len(a) >= len(b), b not in a
@@ -31,6 +43,9 @@ def get_overlap(a, b):
 
 
 def decode(parts):
+	#HACKY:
+	get_overlap.cache = {}
+	
 	while len(parts) > 1:
 		parts.sort(key=len, reverse=True)
 

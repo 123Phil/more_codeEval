@@ -5,19 +5,20 @@ CodeEval Challenge: 48 - Discount Offers
 """
 
 import sys
+from fractions import gcd
+
+# def count_letters(word):
+# 	pass
+
+# def count_vowels(word):
+# 	pass
+
+# def count_consonants(word):
+# 	pass
 
 
-def count_letters(word):
-	pass
-
-def count_vowels(word):
-	pass
-
-def count_consonants(word):
-	pass
-
-def factors(n):
-	pass
+# if gcd(a, b) > 1:
+# 	thing *= 1.5
 
 
 
@@ -33,9 +34,12 @@ def main(args):
 			if line == '\n':
 				continue
 			names, products = [a.split(',') for a in line.strip().split(';')]
-			
+			#...
 			
 
 			
 if __name__ == "__main__":
 	main(sys.argv)
+
+
+

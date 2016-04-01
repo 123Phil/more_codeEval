@@ -1,5 +1,6 @@
 # more_codeEval
-I started doing CodeEval challenges again... gotta get back in the top 100
+I started doing CodeEval challenges again... 
+~~gotta get back in the top 100~~ I'm in the top 50!
 
 Most of these are in Python 2.
 CodeEval has improved their Python 2 interpreter, so it does not consume a lot
